@@ -1,0 +1,155 @@
+#define BOOST_TEST_MODULE Link
+#define BOOST_TEST_DYNLINK
+#define BOOST_TEST_MAIN
+#include <boost/test/unit_test.hpp>
+
+
+
+#include<cstdio>
+#include<iostream>
+using namespace std;
+
+struct LinkedList
+{  
+private: struct Node{
+  Node* next;
+  Node* prev;
+  int value;
+  Node(int x, Node* prev, Node* next){
+    this->value = x;
+  this->prev = prev;
+	this->next = next;	
+  }
+};
+public:  struct  iterator {
+  Node* t;
+  iterator(Node* t){
+  this->t = t;
+  }
+  iterator& operator++(){
+    if(t!= nullptr)t = t->next;
+	return *this;
+  }
+  iterator& operator--(){
+    t = t->prev;
+	return *this;
+  }
+  };
+   Node* head;
+   Node* tail;
+   int size;
+   LinkedList();
+   
+   LinkedList(Node* head,Node* tail, int size){
+	   this->head = head;
+	   this->tail = tail;
+	   this->size = size;
+   }
+   LinkedList(LinkedList& a){	   
+	   Node*t = a.tail;
+	   this->tail = nullptr;
+	   this->head = nullptr;
+	   this->size = 0;
+	   while (t !=nullptr){
+		   this->push_front(t->value);
+		   t = t->next;
+	   }
+	     
+
+   }
+   void push_back(int x){
+	 if (size == 0){
+	 tail = head = new Node(x,nullptr,nullptr);
+	 } else
+	 {
+         Node* list = new Node(x, head, nullptr);
+	     this->head->next = list;
+	     head = list;
+		 
+	 }
+	 size++;
+   }
+   void push_front(int x) {
+      if (size == 0)
+	  {
+	      tail = head = new Node(x,nullptr,nullptr);
+	  } else
+	  {
+	    Node* list = new Node (x, nullptr, tail);
+	    this->tail->prev = list;
+	    tail = list; 
+	  }
+	   size++;
+   }
+   int pop_back(){
+	   size--;	   
+	   int t = this->head->value;
+	   this->head = this->head->prev;
+	   if (size > 0) delete this->head->next;
+	   if (size > 0) this->head->next = nullptr;
+	   return t;
+	   
+   }
+   int pop_front(){
+	   size--;
+	   int t = this->tail->value;
+	   this->tail = this->tail->next;
+	   if (size > 0) delete this->tail->prev;
+	   if (size > 0) this->tail->prev = nullptr;	   
+	   return t;
+   }
+   LinkedList& operator= (LinkedList const& list){
+       LinkedList mas =  LinkedList(nullptr,nullptr, 0);
+	   Node* t = list.tail;
+	   while(t !=nullptr){
+		   mas.push_front(t->value);
+		   t = t->next;
+	   }
+	   return mas; 
+   }
+   void insert(iterator v,int x){
+	   Node* ver = new Node (x, v.t->prev,v.t);
+	   ver->next->prev = ver;
+	   ver->prev->next = ver;
+	   this->size++;
+   }
+   void erase(iterator v){
+     iterator t = v;
+	 if(v.t != nullptr)v.t= v.t->next ;
+	 if(v.t!= nullptr) v.t->prev = t.t->prev;
+	 if (t.t->prev!= nullptr) t.t->prev->next = t.t->next;
+	 this->size--;
+	 if(t.t == this->head){
+	   this->head = this->head->prev;
+	 }
+	 if(t.t == this->tail){
+	   this->tail = this->tail->next;
+	 }
+   }
+   
+   
+};
+
+BOOST_AUTO_TEST_CASE(insertion)
+{
+	LinkedList list1(nullptr,nullptr, 0);
+	list1.push_back(5);
+	list1.push_front(2);
+	
+	BOOST_CHECK_EQUAL(list1.head->value, 6);
+	BOOST_CHECK_LE(list1.tail->value,0);
+	LinkedList::iterator* c = new LinkedList::iterator(list1.head) ;
+	list1.insert(*c,1);
+	c =  new LinkedList::iterator(list1.tail); 
+	list1.erase(*c);
+	BOOST_CHECK_EQUAL(list1.head->value, 1);
+	BOOST_CHECK_EQUAL(list1.pop_front(),2);
+}
+
+
+
+
+
+
+
+
